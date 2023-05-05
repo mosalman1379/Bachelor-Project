@@ -1,0 +1,32 @@
+{
+  "name": "bachelor-project",
+  "version": "1.0.0",
+  "description": "Bachelor project using NFTs and Tokens for creating Digital Twins",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mosalman1379/Bachelor-Project.git"
+  },
+  "keywords": [
+    "NFT",
+    "Blockchain",
+    "Token",
+    "Digital-Twins",
+    "Government"
+  ],
+  "author": "Mohammad Hossein Mosalman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mosalman1379/Bachelor-Project/issues"
+  },
+  "homepage": "https://github.com/mosalman1379/Bachelor-Project#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.3"
+  },
+  "devDependencies": {
+    "hardhat": "^2.14.0"
+  }
+}
