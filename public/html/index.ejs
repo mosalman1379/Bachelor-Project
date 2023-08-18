@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <title>DigitalTwin Site</title>
+  </head>
+  <body class="container-fluid text-white">
+    <header class="row text-white">
+      <%- include("navbar"); %>
+    </header>
+    <section class="row">
+      <form method="post" action="/signup" class="align_start form_background p-2">
+        <h2>ثبت نام کاربر</h2>
+        <div class="mb-3 mt-3">
+          <label for="person_id">
+            کد ملی
+            <input
+              class="form-control"
+              name="person_id"
+              id="person_id"
+              type="text"
+              pattern="[0-9]{10}"
+            />
+          </label>
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="username">
+            نام کاربری
+            <input
+              class="form-control"
+              name="username"
+              id="username"
+              type="text"
+            />
+          </label>
+        </div>
+        <div class="mb-3">
+          <label for="password">
+            رمز عبور
+            <input
+              class="form-control"
+              name="password"
+              id="password"
+              type="text"
+            />
+          </label>
+        </div>
+        <button class="btn btn-danger">
+          connect to metamask
+          <img
+            src="images/metamask.png"
+            width="40"
+            height="40"
+            alt="not loaded"
+          />
+        </button>
+        <p> قبلا ثبت نام کرده اید <a href="/login" class="btn btn-warning">ورود</a> </p>
+        <div class="mb-3 hide">
+          <label for="wallet_address">
+            آدرس کیف پول<input id="wallet_address" type="text" name="wallet_address" 
+            class="form-control"/>
+          </label>
+        </div>
+        <input type="submit" role="button" class="btn btn-success" value="Submit" />
+        <% if (is_registered) { %>
+        <div class="alert alert-success text-right">
+          کاربر با موفقیت در سامانه ثبت شد
+        </div>
+        <% } %>
+      </form>
+    </section>
+    <footer></footer>
+    <script src="/js/metamask.js"></script>
+  </body>
+</html>

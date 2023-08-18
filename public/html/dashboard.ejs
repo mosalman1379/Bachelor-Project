@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+    <script type="text/javascript"
+            src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+    <title>صفحه کاربر</title>
+</head>
+<body class="container-fluid text-white" onload="onLoad()">
+<header class="row text-white"><%- include("navbar"); %></header>
+<section class="d-flex">
+    <div class="list-group w_fit m-1">
+        <button
+                data-command="property"
+                class="list-group-item"
+                onclick="onClick(event)"
+        >
+            ثبت دارایی جدید
+        </button>
+        <button
+                data-command="salary"
+                class="list-group-item"
+                onclick="onClick(event)"
+        >
+            ثبت درآمد ماهانه
+        </button>
+        <button
+                data-command="show salary"
+                class="list-group-item"
+                onclick="onClick(event)">
+            نمایش حقوق های ثبت شده
+        </button>
+        <button
+                data-command="show property"
+                class="list-group-item"
+                onclick="onClick(event)">
+            نمایش دارایی های ثبت شده
+        </button>
+        <button
+                data-command="order_sell"
+                class="list-group-item"
+                onclick="onClick(event)">
+            فروش دارایی
+        </button>
+        <button
+                data-command="delete-order_sell"
+                class="list-group-item"
+                onclick="onClick(event)">
+            حذف از لیست فروش
+        </button>
+        <button
+                data-command="change_owner"
+                class="list-group-item"
+                onclick="onClick(event)">
+            تغییر مالکیت
+        </button>
+        <button
+                data-command="buy_property"
+                class="list-group-item"
+                onclick="onClick(event)">
+            لیست دارایی های قابل خرید
+        </button>
+        <button
+                data-command="show_property_by_id"
+                class="list-group-item"
+                onclick="onClick(event)">
+            نمایش دارایی های و حقوق افراد
+        </button>
+    </div>
+    <div class="m-1 w-100" id="command_page">
+        <div id="delete-order" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+
+        </div>
+        <div id="salary-box" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <h5 class="p-1">فرم ثبت اطلاعات حقوق دریافتی</h5>
+            <form method="post" action="/register_salary">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="data-input">تاریخ واریز حقوق</label>
+                        <input data-jdp name="date" id="date-input" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label for="salaryInput">میزان حقوق دریافتی </label>
+                        <input
+                                onkeyup="format(this)"
+                                type="text"
+                                class="form-control"
+                                placeholder="حقوق دریافتی را به ریال وارد کنید"
+                                name="salary"
+                                id="salaryInput"
+                        />
+                        <span id="salary_amount"></span>
+                    </div>
+                </div>
+                <button class="btn btn-success col-12 mt-2" type="submit" onclick="register_salary(e)">ثبت اطلاعات
+                </button>
+            </form>
+        </div>
+        <div id="property_box" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <h5 class="p-1">ثبت دارایی جدید</h5>
+            <form method="post" action="/register_property" enctype="multipart/form-data">
+                <div class="mb-3 mt-3">
+                    <label for="property_desc">توضیحات دارایی</label>
+                    <textarea id="property_desc" class="form-control" rows="5" name="description"></textarea>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label for="property_type">نوع دارایی</label>
+                        <select id="property_type" name="property_type" class="form-select form-select-lg">
+                            <option value="ملک تجاری">ملک تجاری</option>
+                            <option value="ملک مسکونی">ملک مسکونی</option>
+                            <option value="خودرو">خودرو</option>
+                            <option value="باغ">باغ کشاورزی</option>
+                        </select>
+                    </div>
+                    <div class="col-6  mb-2">
+                        <label for="property_price">مبلغ دارایی</label>
+                        <input type="text" pattern="[0-9]+" class="form-control form-control-lg" name="property_price"
+                               placeholder="مبلغ دارایی را به ریال وارد کنید">
+                    </div>
+                </div>
+                <label for="property_file" class="form-label">فایل دارایی</label><br>
+                <input id="property_file" type="file" class="form-control mb-2" name="prop_file">
+                <button class="btn btn-success col-12" type="submit">ثبت اطلاعات</button>
+            </form>
+        </div>
+        <div id="show_salary_box" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <table class="table table-bordered table-dark table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>حقوق دریافتی به ریال</th>
+                    <th>زمان دریافت حقوق</th>
+                </tr>
+                </thead>
+                <tbody id="salary_box_table">
+
+                </tbody>
+            </table>
+        </div>
+        <div id="show_property_box" class="d-none d-flex flex-wrap bg-secondary"
+             style="--bs-bg-opacity: 0.4">
+
+        </div>
+        <div id="order_sell_box" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <h2 class="display-6 text-end">حراج محصول</h2>
+            <div id="all_property_box" class="d-flex flex-wrap">
+
+            </div>
+            <h2 class="display-6 text-end">محصولات در لیست حراج</h2>
+            <div class="d-flex flex-wrap bg-secondary" style="--bs-bg-opacity: 0.4" id="sold_box">
+
+            </div>
+            <button class="col-12 bg-success" onclick="create_order()">ثبت سفارشات</button>
+        </div>
+        <div id="change_owner" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <h2 class="display-4 text-end bg-warning">دارایی قابل واگذاری</h2>
+            <div class="d-flex flex-wrap" id="all_property">
+
+            </div>
+            <h2 class="display-4 text-end bg-warning">دارایی در لیست واگذاری</h2>
+            <div class="d-flex flex-wrap" id="property_change">
+
+            </div>
+            <form method="get">
+                <h2>نام کاربری شخص خریدار را وارد کنید</h2>
+                <div class="row">
+                    <div class="col">
+                        <input type="text" placeholder="نام کاربری شخص را وارد کنید" class="form-control"
+                               name="username">
+                    </div>
+                    <div class="col">
+                        <button class="col-12 btn btn-primary" onclick="showUser(event)">جستجو</button>
+                    </div>
+                    <p id="error_msg" class="d-none">شخصی با نام کاربری گفته شده وجود ندارد</p>
+                </div>
+                <div class="d-none" id="user_content"></div>
+            </form>
+            <button class="btn btn-success col-12 text-center mt-2" onclick="changeOwner()">ثبت تغییر دارایی</button>
+        </div>
+        <div id="buy_property_box" class="d-none bg-secondary" style="--bs-bg-opacity: 0.4">
+            <h3 class="display-5 text-center bg-success">لیست محصولات قابل خرید</h3>
+            <div class="d-flex flex-wrap" id="available_buying">
+
+            </div>
+            <h3 class="display-5 text-center bg-success">محصولات انتخاب شده</h3>
+            <div class="d-flex flex-wrap bg-gradient" id="selected_for_buy">
+
+            </div>
+            <button class="bg-primary text-center col-12" onclick="buy_properties()">خرید محصولات</button>
+
+        </div>
+        <div id="show_property_by_id" class="bg-secondary d-none" style="--bs-bg-opacity: 0.4">
+            <form method="post" onsubmit="get_property_by_person_id()">
+                <h1>مشاهده دارایی ها و حقوق افراد</h1>
+                <div class="d-flex">
+                    <input type="text" class="col form-control" name="person_id" placeholder="کد ملی شخص را وارد کنید">
+                    <input type="submit" class="col btn btn-primary" value="جستجو">
+                </div>
+            </form>
+            <div id="available_property" class="d-flex flex-wrap bg-gradient">
+
+            </div>
+            <div id="all_salaries" class="mt-1 d-none">
+                <h1 class="text-end d-none">حقوق ۱۲ ماه اخیر</h1>
+                <table class="table table-dark table-hover text-center d-none">
+                    <thead>
+                    <tr>
+                        <td>تاریخ دریافت حقوق</td>
+                        <td>میزان دریافتی به ریال</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    jalaliDatepicker.startWatch();
+
+    function onLoad() {
+        const user_type = getCookie("type");
+        if (user_type === "government") {
+            const buttons = document.querySelectorAll("section div.w_fit button");
+            for (let i = 0; i < buttons.length - 1; i++) {
+                const element = buttons[i];
+                element.classList.add('d-none');
+            }
+        }
+        if (user_type === "people"){
+            const buttons = document.querySelectorAll("section div.w_fit button");
+            buttons[8].classList.add("d-none");
+        }
+        const all_buttons = document.querySelectorAll("ul.navbar-nav li a");
+        all_buttons[0].innerText = "خروج"
+        all_buttons[0].href = "http://127.0.0.1:9000/logout"
+    }
+
+    function get_property_by_person_id() {
+        event.preventDefault();
+        const person_id = $('input[name="person_id"]').val();
+        fetch('http://localhost:9000/get_property_by_id', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({'person_id': person_id})
+        }).then((res) => res.json()).then(data => {
+            const properties = data.properties;
+            const salaries = data.salaries;
+            const property_box = $('#available_property');
+            const all_salaries = $('#all_salaries');
+            if (properties.length === 0) {
+                property_box.append(
+                    '<div class="alert alert-danger mt-2 text-center">داده ای برای نمایش وجود ندارد</div>'
+                )
+            } else {
+                property_box.empty();
+                // add properties
+                for (let i = 0; i < properties.length; i++) {
+                    const property = properties[i];
+                    const {description, property_price, property_type, property_file_path} = property;
+                    const HTML_CARD = `
+                    <div class="card m-2" style="width: 22%;">
+                    <img src="${property_file_path.split('\\')[1]}" class="card-img-top" height="250px" alt="${description}">
+                    <div class="card-body" style="color: black">
+                    <h5 class="card-title">${description}</h5>
+                    <p class="card-text">قیمت دارایی به ریال ${property_price}</p>
+                    <p>نوع دارایی <button class="btn btn-primary disabled">${property_type}</button></p>
+                    </div>
+                    </div>
+                    `
+                    property_box.append(HTML_CARD);
+                }
+
+            }
+            debugger;
+            if (salaries.length === 0) {
+                all_salaries.find('tbody').append('<tr><td colspan="2">حقوقی یافت نشد</td></tr>')
+            } else {
+                // add salaries
+                all_salaries.removeClass("d-none");
+                all_salaries.find("h1").removeClass("d-none");
+                const table = all_salaries.find('table');
+                const tbody = $(table).find("tbody");
+                $(tbody).empty();
+                $(table).removeClass("d-none");
+                for (let i = 0; i < salaries.length; i++) {
+                    const salary = salaries[i];
+                    const HTML_ROW = `
+                    <tr>
+                        <td>${salary.salary_date.split("T")[0]}</td>
+                        <td>${salary.amount}</td>
+                    </tr>
+                    `;
+                    $(tbody).append(HTML_ROW);
+                }
+            }
+
+        })
+    }
+
+    async function buy_properties() {
+        const properties = $('#selected_for_buy').children();
+        const properties_data = []
+        for (let i = 0; i < properties.length; i++) {
+            const property = properties[i];
+            const data = {
+                'from': $(property).find('button.wallet').data('wallet'),
+                'to': getCookie('wallet'),
+                'description': $(property).find('h5.card-title').text()
+            }
+            properties_data.push(data);
+        }
+        await fetch('http://localhost:9000/buy_order', {
+            mode: "cors",
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({'data': properties_data})
+        })
+        hide_command_page();
+    }
+
+    async function register_salary(e) {
+        e.preventDefault()
+        const data = {
+            'salary': document.getElementsByName("salary").value,
+            'date': document.getElementsByName("date").value
+        };
+
+        await fetch('http://localhost:9000/register_salary', {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify(data)
+        })
+        hide_command_page();
+    }
+
+    function showUser(e) {
+        e.preventDefault();
+        const username = $('input[name="username"]').val();
+        fetch(`http://localhost:9000/get_user/${username}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json())
+            .then((data) => {
+                const user = data.user;
+                if (user === null) {
+                    $('#error_msg').removeClass('d-none');
+                } else {
+                    $('#error_msg').addClass('d-none');
+                    const form_html = `
+                    <h1 xmlns="http://www.w3.org/1999/html">مشخصات کاربر</h1>
+                    <form method="get">
+                        <div class="row">
+                            <div class="col">
+                                <label>نام کاربری
+                                    <input disabled type="text" class="col-6" value="${user.username}"></div>
+                                </label>
+                            <div class="col">
+                                <label>آدرس کیف پول
+                                    <input disabled name="wallet" type="text" class="col-6" value="${user.wallet_address}"></div>
+                                </label>
+                        </div>
+                    </form>
+                    `
+                    $('#user_content').append(form_html).removeClass('d-none');
+                }
+            })
+    }
+
+    function getOrders() {
+        const wallet = getCookie('wallet');
+        fetch(`http://localhost:9000/show_orders/${wallet}`)
+            .then(res => res.json())
+            .then(data => {
+                const orders = data.result;
+                const available_buying_property = $('#available_buying');
+                for (let i = 0; i < orders.length; i++) {
+                    const order = orders[i];
+                    const HTML_CARD = `
+                    <div class="card m-2" style="width: 22%;" data-index="${i}">
+                    <img src="${order.property_file_path}" class="card-img-top" height="250px" alt="${order.description}">
+                    <div class="card-body" style="color: black">
+                    <h5 class="card-title">${order.description}</h5>
+                    <p class="card-text">قیمت دارایی به ریال <span class="price">${order.property_price}</span></p>
+                    <p>نوع دارایی <button class="btn btn-primary disabled">
+                        <span class="property_type">${order.property_type}</span></button>
+                    </p>
+                    <div class="row">
+                    <button onclick="add_buy_order(event)" class="btn btn-primary col wallet"
+                    data-wallet="${order.wallet_address}">Buy</button>
+                    </div>
+                    </div>
+                    </div>
+                `;
+                    available_buying_property.append(HTML_CARD);
+                }
+            });
+    }
+
+    function add_buy_order(event) {
+        const parent = event.target.parentNode.parentNode.parentNode;
+        $(parent).find('.row').append('<button class="col-6 btn btn-danger" onclick="delete_buy_order(event)">حذف سفارش خرید</button>')
+        $('#selected_for_buy').append(parent);
+    }
+
+    function delete_buy_order(event) {
+        const parent = event.target.parentNode.parentNode.parentNode;
+        $(parent).find('.row').find('button')[1].remove();
+        $('#available_buying').append(parent);
+    }
+
+    function hide_command_page() {
+        const children = document.getElementById("command_page").children;
+        for (let element = 0; element < children.length; element += 1) {
+            children[element].classList.add("d-none");
+        }
+    }
+
+    function onClick(event) {
+        const command = event.target.dataset.command;
+        hide_command_page();
+        switch (command) {
+            case "property":
+                document.getElementById("property_box").classList.remove("d-none");
+                break;
+            case "salary":
+                document.getElementById("salary-box").classList.remove("d-none");
+                break;
+            case "show salary":
+                document.getElementById("show_salary_box").classList.remove("d-none");
+                showSalary();
+                break;
+            case "show property":
+                document.getElementById("show_property_box").classList.remove('d-none');
+                showProperty("show_property_box");
+                break;
+            case "delete-order-sell":
+                document.getElementById("delete-order").classList.remove("d-none");
+                break;
+            case "order_sell":
+                document.getElementById("order_sell_box").classList.remove("d-none");
+                Get_AvailableSold_Box();
+                break;
+            case "change_owner":
+                document.getElementById("change_owner").classList.remove("d-none");
+                get_available_properties("all_property");
+                break;
+            case "buy_property":
+                document.getElementById("buy_property_box").classList.remove('d-none');
+                getOrders();
+                break;
+            case "show_property_by_id":
+                document.getElementById("show_property_by_id").classList.remove("d-none");
+                break;
+        }
+    }
+
+    function Change_Status(event) {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        const ordered_elements = document.getElementById("sold_box");
+        const order_child = ordered_elements.children;
+        let isPresent = false;
+        for (let i = 0; i < order_child.length; i++) {
+            if (order_child[i].dataset.index === Card.dataset.index)
+                isPresent = true;
+        }
+        if (!isPresent) {
+            $(Card).find('.row').append('<button class="btn btn-danger col" onclick="delete_property(event)">حذف از سبد فروش</button>')
+            ordered_elements.appendChild(Card);
+            const available = document.getElementById("all_property_box");
+            available.removeChild(Card);
+        }
+    }
+
+    function Get_AvailableSold_Box() {
+        const wallet_address = getCookie('wallet');
+        fetch(`http://localhost:9000/show_property/${wallet_address}`, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json())
+            .then((data) => {
+                const documents = data.documents;
+                const element = $(`#all_property_box`);
+                element.empty();
+                for (let i = 0; i < documents.length; i++) {
+                    const {description, property_file_path, property_price, property_type} = documents[i];
+                    const HTML_CARD = `
+                    <div class="card m-2" style="width: 22%;" data-index="${i}">
+                    <img src="${property_file_path.split('\\')[1]}" class="card-img-top" height="250px" alt="${description}">
+                    <div class="card-body" style="color: black">
+                    <h5 class="card-title">${description}</h5>
+                    <p class="card-text">قیمت دارایی به ریال <span class="price">${property_price}</span></p>
+                    <p>نوع دارایی <button class="btn btn-primary disabled"><span class="property_type">${property_type}</span></button></p>
+                    <div class="row">
+                    <button onclick="Change_Status(event)" class="btn btn-primary col">اضافه کردن به سبد فروش</button>
+                    </div>
+                    </div>
+                    </div>
+                    `;
+                    element.append(HTML_CARD);
+                }
+
+            });
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    async function showSalary() {
+        const wallet_address = getCookie('wallet');
+        fetch(`http://localhost:9000/show_salary/${wallet_address}`, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((response) => response.json()).then((data) => {
+            const table = document.getElementById("salary_box_table");
+            while (table.firstChild) {
+                table.removeChild(table.firstChild);
+            }
+            for (let i = 0; i < data.documents.length; i++) {
+                const newRow = document.createElement('tr');
+                const newDateCell = document.createElement("td");
+                const newSalaryCell = document.createElement("td");
+                newDateCell.textContent = data.documents[i].salary_date.split('T')[0]
+                newSalaryCell.textContent = data.documents[i].amount;
+                newRow.appendChild(newSalaryCell);
+                newRow.appendChild(newDateCell);
+                table.appendChild(newRow);
+            }
+        })
+
+    }
+
+    async function showProperty(id) {
+        const wallet_address = getCookie('wallet');
+        fetch(`http://localhost:9000/show_property/${wallet_address}`, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json())
+            .then((data) => {
+                const documents = data.documents;
+                const element = $(`#${id}`);
+                element.empty();
+                for (let i = 0; i < documents.length; i++) {
+                    const {description, property_file_path, property_price, property_type} = documents[i];
+                    const HTML_CARD = `
+                    <div class="card m-2" style="width: 22%;">
+                    <img src="${property_file_path.split('\\')[1]}" class="card-img-top" height="250px" alt="${description}">
+                    <div class="card-body" style="color: black">
+                    <h5 class="card-title">${description}</h5>
+                    <p class="card-text">قیمت دارایی به ریال ${property_price}</p>
+                    <p>نوع دارایی <button class="btn btn-primary disabled">${property_type}</button></p>
+                    </div>
+                    </div>
+                    `;
+                    element.append(HTML_CARD);
+                }
+
+            });
+
+    }
+
+    function format(input) {
+        let input_val = input.value;
+        if (input_val.includes(",")) {
+            input_val = input_val.replaceAll(",", "")
+        }
+        const str_length = input_val.length;
+        if (str_length > 1) {
+            document.getElementById("salary_amount").innerText = Number(input_val).toString().slice(0, str_length - 1) + "تومان "
+        } else {
+            document.getElementById("salary_amount").innerText = "";
+        }
+
+    }
+
+    async function get_available_properties(id) {
+        const wallet_address = getCookie('wallet');
+        fetch(`http://localhost:9000/show_property/${wallet_address}`, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((res) => res.json())
+            .then((data) => {
+                const documents = data.documents;
+                const element = $(`#${id}`);
+                element.empty();
+                for (let i = 0; i < documents.length; i++) {
+                    const {description, property_file_path, property_price, property_type} = documents[i];
+                    const HTML_CARD = `
+                    <div class="card m-2" style="width: 22%;" data-index="${i}">
+                    <img src="${property_file_path.split('\\')[1]}" class="card-img-top" height="250px" alt="${description}">
+                    <div class="card-body" style="color: black">
+                    <h5 class="card-title">${description}</h5>
+                    <p class="card-text">قیمت دارایی به ریال <span class="price">${property_price}</span></p>
+                    <p>نوع دارایی <button class="btn btn-primary disabled"><span class="property_type">${property_type}</span></button></p>
+                    <div class="row">
+                    <button onclick="changeProperty(event)" class="btn btn-primary col">اضافه کردن به سبد فروش</button>
+                    </div>
+                    </div>
+                    </div>
+                    `;
+                    element.append(HTML_CARD);
+                }
+
+            });
+    }
+
+    function changeProperty() {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        const ordered_elements = document.getElementById("property_change");
+        const order_child = ordered_elements.children;
+        let isPresent = false;
+        for (let i = 0; i < order_child.length; i++) {
+            if (order_child[i].dataset.index === Card.dataset.index)
+                isPresent = true;
+        }
+        if (!isPresent) {
+            $(Card).find('.row').append('<button class="btn btn-danger col" onclick="delete_property_owner(event)">حذف از سبد فروش</button>')
+            ordered_elements.appendChild(Card);
+            const available = document.getElementById("all_property");
+            available.removeChild(Card);
+        }
+    }
+
+    function delete_property(event) {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        $(Card).find('.row button')[1].remove()
+        $(`#all_property_box`).append(Card);
+        $('#sold_box').remove(Card);
+    }
+
+    function delete_property_owner(event) {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        $(Card).find('.row button')[1].remove()
+        $(`#all_property`).append(Card);
+        $('#property_change').remove(Card);
+    }
+
+    function add_order(event) {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        const ordered_elements = document.getElementById("sold_box");
+        const order_child = ordered_elements.children;
+        let isPresent = false;
+        for (let i = 0; i < order_child.length; i++) {
+            if (order_child[i].dataset.index === Card.dataset.index)
+                isPresent = true;
+        }
+        if (!isPresent) {
+            $(Card).find('.row').append('<button class="btn btn-danger col" onclick="deleteOrder(event)">حذف از سبد فروش</button>')
+            ordered_elements.appendChild(Card);
+            const available = document.getElementById("all_property_box");
+            available.removeChild(Card);
+        }
+    }
+
+    function deleteOrder(event) {
+        const Card = event.target.parentNode.parentNode.parentNode;
+        $(Card).find('.row button')[1].remove()
+        $(`#all_property_box`).append(Card);
+        $('#sold_box').remove(Card);
+    }
+
+    async function create_order() {
+        const properties = $('#sold_box').children();
+        const wallet_address = getCookie('wallet');
+        let order_list = []
+        properties.each(function () {
+            const image_src = $(this).find('img').attr('src');
+            const description = $(this).find('h5').text();
+            const price = Number($(this).find('span.price').text());
+            const property_type = $(this).find('span.property_type').text();
+            const order_date = new Date();
+            order_list.push({
+                property_file_path: image_src,
+                description: description,
+                property_price: price,
+                property_type: property_type,
+                order_date: order_date,
+                wallet_address: wallet_address
+            })
+        })
+        await fetch('http://localhost:9000/create_order', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order_list)
+        })
+        hide_command_page();
+    }
+
+    async function changeOwner() {
+        if ($('#user_content').find('input').length > 0) {
+            const request = {
+                'desired_wallet': $('input[name="wallet"]').val(),
+                'own_wallet': getCookie('wallet'),
+                'property_names': []
+            }
+            const sell_property = $('#property_change').children();
+            for (let i = 0; i < sell_property.length; i++) {
+                const property_description = $(sell_property[i]).find('h5').text();
+                request.property_names.push(property_description);
+            }
+            await fetch('http://localhost:9000/change_order', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            });
+            hide_command_page();
+        }
+
+    }
+</script>
+
+</body>
+</html>
