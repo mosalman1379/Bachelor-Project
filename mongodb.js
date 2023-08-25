@@ -41,9 +41,33 @@ async function checkValidity(data) {
         const client = await mongoose.connect(url, {dbName: dbName});
         const document = await User.findOne(data);
         await client.disconnect();
-        return document._doc;
+        if (document !== null) {
+            return document._doc;
+        } else {
+        }
     } catch (err) {
         console.error("Error connecting to the database", err);
+        return false;
+    }
+}
+
+async function deleteOrders(property_names, wallet_Address) {
+    const dbName = process.env.DB_NAME;
+    const url = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@localhost:27017`;
+    try {
+        const client = await mongoose.connect(url, {
+            dbName: dbName
+        });
+        for (let i = 0; i < property_names.length; i++) {
+            const property_name = property_names[i];
+            await Order.findOneAndDelete({
+                description: property_name,
+                wallet_address: wallet_Address
+            });
+        }
+        return true;
+    } catch (e) {
+        console.log("Error occurred when update documents form property collection");
         return false;
     }
 }
@@ -207,6 +231,7 @@ async function get_wallet_by_person_id(person_id) {
         return false;
     }
 }
+
 async function last_year_salaries(wallet_address) {
     const dbName = process.env.DB_NAME;
     const url = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@localhost:27017`;
@@ -222,7 +247,7 @@ async function last_year_salaries(wallet_address) {
 }
 
 module.exports.ShowSalaries = showSalaries;
-module.exports.upload = Upload;
+module.exports.upload_file = Upload;
 module.exports.insertProperty = insertOnProperty;
 module.exports.insertOnUsers = insertOnUsers;
 module.exports.checkValidity = checkValidity;
@@ -235,3 +260,4 @@ module.exports.showOrders = showOrders;
 module.exports.buy_order = BuyOrder;
 module.exports.Get_Wallet_by_person_id = get_wallet_by_person_id;
 module.exports.last_year_salaries = last_year_salaries;
+module.exports.deleteOrders = deleteOrders;

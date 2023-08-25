@@ -8,9 +8,6 @@
             integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
             crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/css/style.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
-    <script type="text/javascript"
-            src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
     <title>صفحه کاربر</title>
 </head>
 <body class="container-fluid text-white" onload="onLoad()">
@@ -50,12 +47,6 @@
             فروش دارایی
         </button>
         <button
-                data-command="delete-order_sell"
-                class="list-group-item"
-                onclick="onClick(event)">
-            حذف از لیست فروش
-        </button>
-        <button
                 data-command="change_owner"
                 class="list-group-item"
                 onclick="onClick(event)">
@@ -84,7 +75,7 @@
                 <div class="row">
                     <div class="col-6">
                         <label for="data-input">تاریخ واریز حقوق</label>
-                        <input data-jdp name="date" id="date-input" class="form-control">
+                        <input type="date" name="date" id="date-input" class="form-control">
                     </div>
                     <div class="col-6">
                         <label for="salaryInput">میزان حقوق دریافتی </label>
@@ -225,7 +216,7 @@
     </div>
 </section>
 <script>
-    jalaliDatepicker.startWatch();
+    // jalaliDatepicker.startWatch();
 
     function onLoad() {
         const user_type = getCookie("type");
@@ -236,9 +227,9 @@
                 element.classList.add('d-none');
             }
         }
-        if (user_type === "people"){
+        if (user_type === "people") {
             const buttons = document.querySelectorAll("section div.w_fit button");
-            buttons[8].classList.add("d-none");
+            buttons[7].classList.add("d-none");
         }
         const all_buttons = document.querySelectorAll("ul.navbar-nav li a");
         all_buttons[0].innerText = "خروج"
@@ -259,13 +250,14 @@
             const properties = data.properties;
             const salaries = data.salaries;
             const property_box = $('#available_property');
-            const all_salaries = $('#all_salaries');
+            $(property_box).empty();
+            $(all_salaries).find("tbody").empty();
             if (properties.length === 0) {
                 property_box.append(
-                    '<div class="alert alert-danger mt-2 text-center">داده ای برای نمایش وجود ندارد</div>'
+                    '<div class="alert alert-danger mt-2 text-center">دارایی ای برای نمایش وجود ندارد</div>'
                 )
             } else {
-                property_box.empty();
+                $(property_box).empty();
                 // add properties
                 for (let i = 0; i < properties.length; i++) {
                     const property = properties[i];
@@ -282,16 +274,14 @@
                     `
                     property_box.append(HTML_CARD);
                 }
-
             }
-            debugger;
             if (salaries.length === 0) {
-                all_salaries.find('tbody').append('<tr><td colspan="2">حقوقی یافت نشد</td></tr>')
+                $(all_salaries).find('tbody').append('<tr><td colspan="2">حقوقی یافت نشد</td></tr>')
             } else {
                 // add salaries
-                all_salaries.removeClass("d-none");
-                all_salaries.find("h1").removeClass("d-none");
-                const table = all_salaries.find('table');
+                $(all_salaries).removeClass("d-none");
+                $(all_salaries).find("h1").removeClass("d-none");
+                const table = $(all_salaries).find('table');
                 const tbody = $(table).find("tbody");
                 $(tbody).empty();
                 $(table).removeClass("d-none");
@@ -640,6 +630,7 @@
     }
 
     function changeProperty() {
+        debugger;
         const Card = event.target.parentNode.parentNode.parentNode;
         const ordered_elements = document.getElementById("property_change");
         const order_child = ordered_elements.children;
@@ -671,6 +662,7 @@
     }
 
     function add_order(event) {
+        debugger;
         const Card = event.target.parentNode.parentNode.parentNode;
         const ordered_elements = document.getElementById("sold_box");
         const order_child = ordered_elements.children;
@@ -729,11 +721,14 @@
             const request = {
                 'desired_wallet': $('input[name="wallet"]').val(),
                 'own_wallet': getCookie('wallet'),
-                'property_names': []
+                'property_names': [],
+                'total_price': 0
             }
             const sell_property = $('#property_change').children();
             for (let i = 0; i < sell_property.length; i++) {
                 const property_description = $(sell_property[i]).find('h5').text();
+                const property_price = parseInt($(sell_property[i]).find("span").text());
+                request['total_price'] += property_price;
                 request.property_names.push(property_description);
             }
             await fetch('http://localhost:9000/change_order', {
@@ -744,6 +739,7 @@
                 },
                 body: JSON.stringify(request)
             });
+            sell_property.empty();
             hide_command_page();
         }
 

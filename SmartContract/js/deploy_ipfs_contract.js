@@ -1,41 +1,48 @@
-const {Web3} = require('web3');
-const web3 = new Web3('http://127.0.0.1:8545'); // Connect to Ganache
-
-// Compile your contract and get its ABI and bytecode
-const {contractABI,contractBytecode} = require('./compile_contract');
-
-// Create a contract object
-const Contract = new web3.eth.Contract(contractABI);
-
-// Deploy the contract
-async function deployContract() {
-    const accounts = await web3.eth.getAccounts();
-    const deployTransaction = Contract.deploy({
-        data: contractBytecode,
-        arguments: [], // If your constructor requires arguments
-    });
-
-    const deployOptions = {
-        from: accounts[0],
-        gas: '4700000', // Adjust the gas limit as needed
-    };
-
-    const deployedContract = await deployTransaction.send(deployOptions);
-    return deployedContract;
+const {contractABI, contractBytecode} = require('./compile_contract');
+const {ethers} = require('ethers');
+require('dotenv').config()
+const infura_url = "https://sepolia.infura.io/v3/6c05bf4a314642f09df40c86d1a424cb";
+const private_key = "0xe4dce4eecd5de5050de7b0b31bac706015bae9278996057524355663ce38e192";
+const deployed_contract_address = "0xd1ca08B3710eD5Bde2f30cCbaD49150c7A0A929e";
+const deploy = async function () {
+    try {
+        const provider = new ethers.providers.JsonRpcProvider(infura_url);
+        const Wallet = new ethers.Wallet(private_key, provider);
+        const ContractInstance = new ethers.ContractFactory(contractABI, contractBytecode, Wallet);
+        const contractInstance = await ContractInstance.deploy();
+        await contractInstance.deployed();
+        console.log("Deployed contract address - ", contractInstance.address);
+    } catch (err) {
+        console.log("Error in deploying contract.");
+        console.log(err);
+    }
+};
+async function add_ipfs(data) {
+    try {
+        const {image_path, description, nft_price, nft_type, hash, address} = data;
+        const provider = new ethers.providers.JsonRpcProvider(infura_url);
+        const Wallet = new ethers.Wallet(private_key, provider);
+        const contract = new ethers.Contract(deployed_contract_address, contractABI, Wallet);
+        await contract.add_IPFS_Hash(image_path, description, nft_price, nft_type, hash, address);
+        console.log('NFT added to smart-contract')
+    } catch (err) {
+        console.log("Error in add nft metadata to contract.");
+        console.log(err);
+    }
 }
-
-// Call the deployContract function
-deployContract().then(async deployedContract => {
-    console.log('Contract deployed at address:', deployedContract.options.address);
-    const accounts = await web3.eth.getAccounts()
-    // Call a contract function
-    callContractFunction(deployedContract.options.address,accounts[0]);
-});
-async function callContractFunction(contractAddress,address) {
-    const contractInstance = new web3.eth.Contract(contractABI, contractAddress);
-
-    // Call a contract function
-    const result = await contractInstance.methods.getIPFSHashes(address).call();
-
-    console.log('Function Result:', result);
+async function get_ipfs(address) {
+    try {
+        const provider = new ethers.providers.JsonRpcProvider(infura_url);
+        const Wallet = new ethers.Wallet(private_key, provider);
+        const contract = new ethers.Contract(deployed_contract_address, contractABI, Wallet);
+        const nft_metadata = await contract.get_IPFS_Hashes(address);
+        console.log('NFT collected from smart-contract')
+        return nft_metadata;
+    } catch (err) {
+        console.log("Error in collect nft metadata from contract.");
+        console.log(err);
+    }
 }
+module.exports.add_ipfs = add_ipfs;
+module.exports.get_ipfs = get_ipfs;
+module.exports.deploy_contract = deploy;

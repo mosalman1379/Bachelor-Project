@@ -5,3 +5,4 @@ function deployFunc(deployer) {
 }
 
 module.exports.deploy = deployFunc
+

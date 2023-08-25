@@ -23,9 +23,8 @@ async function fileFromPath(filePath) {
 
 async function create_nft(image_file, name, description) {
     const root_path = path.dirname(path.dirname(__dirname));
-    const file_path = `uploads/${image_file}`;
-    const image_path = path.join(root_path, file_path);
-    const result = await storeNFT(image_path, name, description);
-    return result;
+    const uploads_path = path.join(root_path,"uploads");
+    const file_path = path.join(uploads_path,`${image_file}`)
+    return await storeNFT(file_path, name, description);
 }
 module.exports.create_nft = create_nft;
